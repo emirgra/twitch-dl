@@ -11,7 +11,7 @@ import click
 import httpx
 
 from twitchdl import twitch, twitch_async, utils
-from twitchdl.entities import ClipAccessToken, ClipDetails, VideoQuality
+from twitchdl.entities import ClipDetails, VideoQuality
 from twitchdl.exceptions import ConsoleError
 from twitchdl.http import CHUNK_SIZE, TIMEOUT
 from twitchdl.output import (

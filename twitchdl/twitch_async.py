@@ -8,7 +8,7 @@ from typing import Any, Mapping, Optional
 import httpx
 
 from twitchdl import CLIENT_ID
-from twitchdl.entities import ClipAccessToken, Data, ClipDetails
+from twitchdl.entities import ClipDetails, Data
 from twitchdl.exceptions import ConsoleError
 from twitchdl.twitch import Content, gql_raise_on_error, log_request, log_response
 

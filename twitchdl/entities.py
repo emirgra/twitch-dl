@@ -65,12 +65,6 @@ class VideoQuality(TypedDict):
     sourceURL: str
 
 
-class ClipAccessToken(TypedDict):
-    id: str
-    playbackAccessToken: AccessToken
-    videoQualities: List[VideoQuality]
-
-
 class Clip(TypedDict):
     id: str
     slug: str

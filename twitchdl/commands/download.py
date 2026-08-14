@@ -15,7 +15,7 @@ from twitchdl import twitch, utils
 from twitchdl.cache import Cache
 from twitchdl.commands.info import fetch_chapters
 from twitchdl.entities import Clip, DownloadOptions, VideoQuality
-from twitchdl.exceptions import ConsoleError, AuthRequiredError
+from twitchdl.exceptions import AuthRequiredError, ConsoleError
 from twitchdl.http import download_all, download_file
 from twitchdl.naming import clip_filename, video_filename, video_placeholders
 from twitchdl.output import (
@@ -40,7 +40,7 @@ from twitchdl.playlists import (
     select_playlist,
 )
 from twitchdl.subonly import get_subonly_playlists
-from twitchdl.twitch import Chapter, ClipAccessToken, Video
+from twitchdl.twitch import Chapter, Video
 
 
 def download(ids: List[str], args: DownloadOptions):
