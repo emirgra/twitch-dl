@@ -56,7 +56,7 @@ pythonVersion = "3.9"
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py39"
 
 [tool.pytest.ini_options]
 addopts = "-v"
