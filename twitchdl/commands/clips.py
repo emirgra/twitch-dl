@@ -11,7 +11,7 @@ import click
 import httpx
 
 from twitchdl import twitch, twitch_async, utils
-from twitchdl.entities import ClipAccessToken, VideoQuality
+from twitchdl.entities import ClipAccessToken, ClipDetails, VideoQuality
 from twitchdl.exceptions import ConsoleError
 from twitchdl.http import CHUNK_SIZE, TIMEOUT
 from twitchdl.output import (
@@ -104,7 +104,7 @@ async def _download_clips(
 
 
 class Task(NamedTuple):
-    slug: str
+    clip: Clip
     target: Path
 
 
@@ -120,7 +120,7 @@ async def _download_page(clips: List[Clip], target_dir: Path, workers: int):
             if target.exists():
                 print_status(f"Clip exists: {green(target)}")
             else:
-                await queue.put(Task(clip["slug"], target))
+                await queue.put(Task(clip, target))
 
     tasks = [asyncio.create_task(_download_worker(queue)) for _ in range(workers)]
 
@@ -141,12 +141,12 @@ async def _download_worker(queue: asyncio.Queue[Task]):
 
             try:
                 print_status(f"Downloading {task.target}...", dim=True, transient=True)
-                url = await _get_clip_authenticated_url(client, task.slug, "source")
+                url = await _get_clip_authenticated_url(client, task.clip, "source")
                 await _download_file(client, url, tmp_target)
                 os.rename(tmp_target, task.target)
                 print_status(f"Downloaded {green(task.target)}")
             except Exception as ex:
-                click.secho(f"Failed downloading {task.slug}: {ex}", err=True, fg="red")
+                click.secho(f"Failed downloading {task.clip['slug']}: {ex}", err=True, fg="red")
                 tmp_target.unlink(missing_ok=True)
 
             queue.task_done()
@@ -160,26 +160,29 @@ async def _download_file(client: httpx.AsyncClient, url: str, target: Path):
                 f.write(chunk)
 
 
-async def _get_clip_authenticated_url(client: httpx.AsyncClient, slug: str, quality: str):
-    access_token = await twitch_async.get_clip_access_token(client, slug)
+async def _get_clip_authenticated_url(client: httpx.AsyncClient, clip: Clip, quality: str):
+    details = await twitch_async.get_clip_details(client, clip["slug"])
 
-    if not access_token:
-        raise ConsoleError(f"Access token not found for slug '{slug}'")
+    if not details:
+        raise ConsoleError(f"Access token not found for slug '{clip['slug']}'")
 
-    url = _get_clip_url(access_token, quality)
+    url = _get_clip_url(clip, details, quality)
 
     query = urlencode(
         {
-            "sig": access_token["playbackAccessToken"]["signature"],
-            "token": access_token["playbackAccessToken"]["value"],
+            "sig": details["playbackAccessToken"]["signature"],
+            "token": details["playbackAccessToken"]["value"],
         }
     )
 
     return f"{url}?{query}"
 
 
-def _get_clip_url(access_token: ClipAccessToken, quality: str) -> str:
-    qualities = access_token["videoQualities"]
+def _get_clip_url(clip: Clip, details: ClipDetails, quality: str) -> str:
+    qualities = clip["videoQualities"]
+
+    if not qualities:
+        raise ConsoleError(f"Video qualities not found for {clip['slug']}")
 
     if quality == "source":
         return qualities[0]["sourceURL"]

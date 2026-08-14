@@ -55,7 +55,7 @@ def test_get_clips():
     assert clip is not None
     assert clip["slug"] == slug
 
-    assert get_clip_authenticated_url(slug, "source")
+    assert get_clip_authenticated_url(clip, "source")
 
 
 def test_get_games():

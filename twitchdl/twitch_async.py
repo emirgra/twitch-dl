@@ -8,7 +8,7 @@ from typing import Any, Mapping, Optional
 import httpx
 
 from twitchdl import CLIENT_ID
-from twitchdl.entities import ClipAccessToken, Data
+from twitchdl.entities import ClipAccessToken, Data, ClipDetails
 from twitchdl.exceptions import ConsoleError
 from twitchdl.twitch import Content, gql_raise_on_error, log_request, log_response
 
@@ -59,14 +59,14 @@ async def gql_persisted_query(client: httpx.AsyncClient, query: Data):
     return response.json()
 
 
-async def get_clip_access_token(client: httpx.AsyncClient, slug: str) -> ClipAccessToken:
+async def get_clip_details(client: httpx.AsyncClient, slug: str) -> ClipDetails:
     query = {
-        "operationName": "VideoAccessToken_Clip",
+        "operationName": "ShareClipRenderStatus",
         "variables": {"slug": slug},
         "extensions": {
             "persistedQuery": {
                 "version": 1,
-                "sha256Hash": "36b89d2507fce29e5ca551df756d27c1cfe079e2609642b4390aa4c35796eb11",
+                "sha256Hash": "0a02bb974443b576f5579aab0fef1d4b7f44e58a8a256f0c5adfead0db70640f",
             }
         },
     }

@@ -1,6 +1,7 @@
-from dataclasses import dataclass
-from typing import Any, Generic, List, Literal, Mapping, Optional, TypeVar, TypedDict
+from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any, Generic, List, Literal, Mapping, Optional, TypedDict, TypeVar
 
 T = TypeVar("T")
 
@@ -187,3 +188,9 @@ class VideoComments_Video(TypedDict):
 class VideoComments(TypedDict):
     video: VideoComments_Video
     badges: List[Badge]
+
+
+# This type is incomplete, currently only used to get the access token
+# TODO: use this instead of Clip since it seems to contain all the necessary data.
+class ClipDetails(TypedDict):
+    playbackAccessToken: AccessToken

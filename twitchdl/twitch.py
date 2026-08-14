@@ -20,12 +20,13 @@ from twitchdl.entities import (
     ClipsPeriod,
     Data,
     Page,
+    ClipDetails,
     Video,
     VideoComments,
     VideosSort,
     VideosType,
 )
-from twitchdl.exceptions import ConsoleError, AuthRequiredError
+from twitchdl.exceptions import AuthRequiredError, ConsoleError
 from twitchdl.utils import format_size, remove_null_values
 
 
@@ -105,9 +106,9 @@ def log_response(response: httpx.Response, duration_seconds: float):
         logger.debug(f"<-- {response.content.decode()}")
 
 
-def gql_persisted_query(query: Data):
+def gql_persisted_query(query: Data, auth_token: Optional[str] = None):
     url = "https://gql.twitch.tv/gql"
-    response = authenticated_post(url, json=query)
+    response = authenticated_post(url, json=query, auth_token=auth_token)
     gql_raise_on_error(response)
     return response.json()
 
@@ -206,22 +207,6 @@ def get_clip(slug: str) -> Optional[Clip]:
     """
 
     response = gql_query(query)
-    return response["data"]["clip"]
-
-
-def get_clip_access_token(slug: str) -> ClipAccessToken:
-    query = {
-        "operationName": "VideoAccessToken_Clip",
-        "variables": {"slug": slug},
-        "extensions": {
-            "persistedQuery": {
-                "version": 1,
-                "sha256Hash": "36b89d2507fce29e5ca551df756d27c1cfe079e2609642b4390aa4c35796eb11",
-            }
-        },
-    }
-
-    response = gql_persisted_query(query)
     return response["data"]["clip"]
 
 
@@ -560,3 +545,19 @@ def get_video_comments(video_id: str) -> VideoComments:
 
     response = gql_persisted_query(query)
     return response["data"]
+
+
+def get_clip_details(slug: str) -> ClipDetails:
+    query = {
+        "operationName": "ShareClipRenderStatus",
+        "variables": {"slug": slug},
+        "extensions": {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "0a02bb974443b576f5579aab0fef1d4b7f44e58a8a256f0c5adfead0db70640f",
+            }
+        },
+    }
+
+    response = gql_persisted_query(query)
+    return response["data"]["clip"]

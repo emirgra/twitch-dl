@@ -14,7 +14,7 @@ import httpx
 from twitchdl import twitch, utils
 from twitchdl.cache import Cache
 from twitchdl.commands.info import fetch_chapters
-from twitchdl.entities import Clip, DownloadOptions
+from twitchdl.entities import Clip, DownloadOptions, VideoQuality
 from twitchdl.exceptions import ConsoleError, AuthRequiredError
 from twitchdl.http import download_all, download_file
 from twitchdl.naming import clip_filename, video_filename, video_placeholders
@@ -129,9 +129,7 @@ def _concat_vods(vod_paths: List[Path], target: Path):
             raise ConsoleError(f"Joining files failed: {result.stderr}")
 
 
-def _get_clip_url(access_token: ClipAccessToken, quality: Optional[str]) -> str:
-    qualities = access_token["videoQualities"]
-
+def _get_clip_url(qualities: List[VideoQuality], quality: Optional[str]) -> str:
     # Quality given as an argument
     if quality:
         if quality == "source":
@@ -157,19 +155,23 @@ def _get_clip_url(access_token: ClipAccessToken, quality: Optional[str]) -> str:
     return selected_quality["sourceURL"]
 
 
-def get_clip_authenticated_url(slug: str, quality: Optional[str]):
+def get_clip_authenticated_url(clip: Clip, quality: Optional[str]):
     print_log("Fetching access token...")
-    access_token = twitch.get_clip_access_token(slug)
+    slug = clip["slug"]
+    details = twitch.get_clip_details(slug)
 
-    if not access_token:
+    if not details:
         raise ConsoleError(f"Access token not found for slug '{slug}'")
 
-    url = _get_clip_url(access_token, quality)
+    if not clip["videoQualities"]:
+        raise ConsoleError(f"No video qualities found for clip '{slug}'")
+
+    url = _get_clip_url(clip["videoQualities"], quality)
 
     query = urlencode(
         {
-            "sig": access_token["playbackAccessToken"]["signature"],
-            "token": access_token["playbackAccessToken"]["value"],
+            "sig": details["playbackAccessToken"]["signature"],
+            "token": details["playbackAccessToken"]["value"],
         }
     )
 
@@ -203,7 +205,7 @@ def _download_clip(clip: Clip, args: DownloadOptions) -> None:
             elif response == Overwrite.ABORT:
                 raise click.Abort()
 
-    url = get_clip_authenticated_url(clip["slug"], args.quality)
+    url = get_clip_authenticated_url(clip, args.quality)
     print_log(f"Downloading from: {url}")
 
     if args.dry_run:
