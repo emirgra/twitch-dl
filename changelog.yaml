@@ -1,3 +1,8 @@
+3.3.2:
+  date: 2026-01-25
+  changes:
+    - "Fix fetching clip access tokens (#190)"
+
 3.3.1:
   date: 2026-01-25
   changes:
