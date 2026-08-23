@@ -229,7 +229,7 @@ def select_playlist_interactive(playlists: List[Playlist]) -> Playlist:
         if playlist.is_source:
             default = index + 1
 
-    no = utils.read_int("\nChoose quality", min=1, max=len(playlists) + 1, default=default)
+    no = utils.read_int("\nChoose quality", min=1, max=len(playlists), default=default)
     playlist = playlists[no - 1]
     return playlist
 
